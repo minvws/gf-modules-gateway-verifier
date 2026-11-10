@@ -42,32 +42,6 @@ def streams() -> Iterator[Streams]:
         yield logger, app_messages, siem_messages
 
 
-def test_binding_mismatch_keeps_endpoint_in_both_streams(
-    streams: Streams,
-) -> None:
-    logger, app_messages, siem_messages = streams
-    gflog.emit(
-        logger,
-        Log.MTLS_BINDING_MISMATCH,
-        "mismatch",
-        fields={
-            "certificate_organization_identifier": "00000123",
-            "cert_thumbprint_jwt": "abc",
-            "cert_thumbprint_presented": "def",
-            "client_id": "00000001",
-        },
-    )
-
-    app_msg = app_messages[0]
-    siem_msg = siem_messages[0]
-
-    for msg in (app_msg, siem_msg):
-        assert msg["endpoint"] == "/validate"
-        assert msg["certificate_organization_identifier"] == "00000123"
-        assert msg["cert_thumbprint_presented"] == "def"
-        assert msg["client_id"] == "00000001"
-
-
 def test_authorization_mismatch_drops_resource_id_from_siem(
     streams: Streams,
 ) -> None:
@@ -96,7 +70,7 @@ def test_authorization_mismatch_drops_resource_id_from_siem(
     assert siem_msg["certificate_organization_identifier"] == "00000123"
 
 
-def test_success_keeps_thumbprint_prefix_only_in_app(
+def test_success_carries_both_organizations_in_app_and_siem(
     streams: Streams,
 ) -> None:
     logger, app_messages, siem_messages = streams
@@ -105,45 +79,17 @@ def test_success_keeps_thumbprint_prefix_only_in_app(
             logger,
             Log.AUTHENTICATION_SUCCESS,
             "ok",
-            fields={"certificate_organization_identifier": "00000123", "cert_thumbprint_prefix": "validthu"},
+            fields={
+                "certificate_organization_identifier": "00000123",
+                "represented_organization_identifier": "00000456",
+            },
         )
 
-    app_msg = app_messages[0]
-    siem_msg = siem_messages[0]
-
-    assert app_msg["cert_thumbprint_prefix"] == "validthu"
-    assert "cert_thumbprint_prefix" not in siem_msg  # not in SIEM allow-list for AUTHENTICATION_SUCCESS
-    # organization id/scope/endpoint/method in both
-    for msg in (app_msg, siem_msg):
+    for msg in (app_messages[0], siem_messages[0]):
         assert msg["certificate_organization_identifier"] == "00000123"
+        assert msg["represented_organization_identifier"] == "00000456"
         assert msg["scope"] == "test-scope"
         assert msg["endpoint"] == "/validate"
-
-
-def test_token_binding_invalid_drops_failure_reason_from_siem(
-    streams: Streams,
-) -> None:
-    logger, app_messages, siem_messages = streams
-    gflog.emit(
-        logger,
-        Log.TOKEN_BINDING_INVALID,
-        "missing cnf claim",
-        fields={
-            "certificate_organization_identifier": "00000001123456700000",
-            "failure_reason": "missing_cnf_claim",
-            "cert_thumbprint_presented": "presentedthumb",
-        },
-    )
-
-    app_msg = app_messages[0]
-    siem_msg = siem_messages[0]
-
-    assert app_msg["failure_reason"] == "missing_cnf_claim"
-    assert "failure_reason" not in siem_msg  # not in SIEM allow-list for TOKEN_BINDING_INVALID
-    for msg in (app_msg, siem_msg):
-        assert msg["certificate_organization_identifier"] == "00000001123456700000"
-        assert msg["endpoint"] == "/validate"
-        assert "cert_thumbprint_presented" not in msg
 
 
 def test_records_carry_stream_id_and_application_id() -> None:

@@ -28,13 +28,11 @@ Every event carries these on every stream, whenever the request context holds a 
 | --- | --- | --- | --- |
 | `JWT_VERIFICATION_FAILED` | 200400 | WARNING | `error_reason`, `token_present` |
 | `MALFORMED_AUTHORIZATION_HEADER` | 200409 | WARNING | `error_reason`, `token_present` |
-| `MTLS_BINDING_MISMATCH` | 200401 | WARNING | `certificate_organization_identifier`, `cert_thumbprint_jwt`, `cert_thumbprint_presented`, `client_id` |
-| `TOKEN_BINDING_INVALID` | 200406 | WARNING | `certificate_organization_identifier`, `failure_reason` |
 | `ORGANIZATION_AUTHORIZATION_MISMATCH` | 200407 | WARNING | `certificate_organization_identifier`, `resource_organization_identifier`, `resource_id`, `client_id` |
 | `MISSING_ORGANIZATION_CLAIM` | 200408 | WARNING | `certificate_organization_identifier`, `client_id` |
 | `MISSING_ACT_CLAIM` | 200410 | WARNING | `certificate_organization_identifier`, `client_id` |
 | `COMMON_NAME_AUTHORIZATION_MISMATCH` | 200411 | WARNING | `certificate_organization_identifier`, `client_id` |
-| `AUTHENTICATION_SUCCESS` | 200403 | INFO | `certificate_organization_identifier`, `represented_organization_identifier`, `cert_thumbprint_prefix` |
+| `AUTHENTICATION_SUCCESS` | 200403 | INFO | `certificate_organization_identifier`, `represented_organization_identifier` |
 | `MISSING_AUTHORIZATION_HEADER` | 200404 | WARNING | `token_present`, `client_id`, `certificate_organization_identifier` |
 | `SYS_APP_STARTED` | 200601 | INFO | `version`, `config_path` |
 | `SYS_APP_STOPPED` | 200602 | INFO | `shutdown_reason`, `last_exception_type` |
@@ -49,8 +47,6 @@ Every event carries these on every stream, whenever the request context holds a 
 | --- | --- | --- | --- |
 | `JWT_VERIFICATION_FAILED` | 200400 | WARNING | `error_reason`, `token_present` |
 | `MALFORMED_AUTHORIZATION_HEADER` | 200409 | WARNING | `error_reason`, `token_present` |
-| `MTLS_BINDING_MISMATCH` | 200401 | WARNING | `certificate_organization_identifier`, `cert_thumbprint_presented`, `cert_thumbprint_jwt`, `client_id` |
-| `TOKEN_BINDING_INVALID` | 200406 | WARNING | `certificate_organization_identifier` |
 | `ORGANIZATION_AUTHORIZATION_MISMATCH` | 200407 | WARNING | `certificate_organization_identifier`, `resource_organization_identifier`, `client_id` |
 | `MISSING_ORGANIZATION_CLAIM` | 200408 | WARNING | `certificate_organization_identifier`, `client_id` |
 | `MISSING_ACT_CLAIM` | 200410 | WARNING | `certificate_organization_identifier`, `client_id` |
