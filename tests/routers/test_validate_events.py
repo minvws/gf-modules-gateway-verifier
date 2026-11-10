@@ -26,6 +26,7 @@ CLIENT_ORGANIZATION_ID = "00000001123456700000"
 CLIENT_COMMON_NAME = "common-name"
 ORGANIZATION_ID = "00000001123456780000"
 OTHER_ORGANIZATION_ID = "00000002987654321000"
+CLIENT_ID = "client-1"
 
 
 @pytest.fixture(autouse=True)
@@ -57,6 +58,7 @@ def jwt_service():
             "act": {"sub": CLIENT_ORGANIZATION_ID, "cn": CLIENT_COMMON_NAME},
             "aud": "test-audience",
             "scope": "test-scope",
+            "client_id": CLIENT_ID,
             "cnf": {"x5t#S256": "validthumbprint"},
         }
     )
@@ -93,6 +95,7 @@ def test_missing_header_logs_005(client: TestClient, caplog: pytest.LogCaptureFi
         client.get("/validate")
     record = _record(caplog, Log.MISSING_AUTHORIZATION_HEADER.event_id)
     assert record.token_present is False  # type: ignore[attr-defined]
+    assert not hasattr(record, "request_headers")
 
 
 def test_non_bearer_header_logs_001(client: TestClient, caplog: pytest.LogCaptureFixture) -> None:
@@ -134,7 +137,7 @@ def test_missing_act_logs_missing_act_claim(
     with caplog.at_level(logging.DEBUG):
         client.get("/validate", headers=headers())
     record = _record(caplog, Log.MISSING_ACT_CLAIM.event_id)
-    assert record.claims["sub"] == OTHER_ORGANIZATION_ID  # type: ignore[attr-defined]
+    assert record.certificate_organization_identifier == CLIENT_ORGANIZATION_ID  # type: ignore[attr-defined]
 
 
 def test_missing_act_sub_logs_missing_organization_claim(
@@ -152,7 +155,7 @@ def test_missing_act_sub_logs_missing_organization_claim(
     with caplog.at_level(logging.DEBUG):
         client.get("/validate", headers=headers())
     record = _record(caplog, Log.MISSING_ORGANIZATION_CLAIM.event_id)
-    assert record.claims["act"] == {"cn": "other-common-name"}  # type: ignore[attr-defined]
+    assert record.certificate_organization_identifier == CLIENT_ORGANIZATION_ID  # type: ignore[attr-defined]
 
 
 def test_oin_mismatch_logs_003(client: TestClient, jwt_service: MagicMock, caplog: pytest.LogCaptureFixture) -> None:
@@ -168,7 +171,8 @@ def test_oin_mismatch_logs_003(client: TestClient, jwt_service: MagicMock, caplo
     with caplog.at_level(logging.DEBUG):
         client.get("/validate", headers=headers())
     record = _record(caplog, Log.ORGANIZATION_AUTHORIZATION_MISMATCH.event_id)
-    assert record.claims["sub"] == OTHER_ORGANIZATION_ID  # type: ignore[attr-defined]
+    assert record.certificate_organization_identifier == CLIENT_ORGANIZATION_ID  # type: ignore[attr-defined]
+    assert record.resource_organization_identifier == OTHER_ORGANIZATION_ID  # type: ignore[attr-defined]
 
 
 def test_common_name_mismatch_logs_common_name_authorization_mismatch(
@@ -186,7 +190,7 @@ def test_common_name_mismatch_logs_common_name_authorization_mismatch(
     with caplog.at_level(logging.DEBUG):
         client.get("/validate", headers=headers())
     record = _record(caplog, Log.COMMON_NAME_AUTHORIZATION_MISMATCH.event_id)
-    assert record.claims["act"]["cn"] == "other-common-name"  # type: ignore[attr-defined]
+    assert record.certificate_organization_identifier == CLIENT_ORGANIZATION_ID  # type: ignore[attr-defined]
 
 
 def test_success_logs_004(client: TestClient, caplog: pytest.LogCaptureFixture) -> None:
@@ -194,7 +198,6 @@ def test_success_logs_004(client: TestClient, caplog: pytest.LogCaptureFixture) 
         response = client.get("/validate", headers=headers())
     assert response.status_code == 200
     record = _record(caplog, Log.AUTHENTICATION_SUCCESS.event_id)
-    assert record.claims["sub"] == ORGANIZATION_ID  # type: ignore[attr-defined]
-    assert record.claims["act"]["cn"] == CLIENT_COMMON_NAME  # type: ignore[attr-defined]
-    assert record.claims["act"]["sub"] == CLIENT_ORGANIZATION_ID  # type: ignore[attr-defined]
-    assert record.claims["scope"] == "test-scope"  # type: ignore[attr-defined]
+    assert record.certificate_organization_identifier == CLIENT_ORGANIZATION_ID  # type: ignore[attr-defined]
+    assert record.represented_organization_identifier == ORGANIZATION_ID  # type: ignore[attr-defined]
+    assert not hasattr(record, "claims")
