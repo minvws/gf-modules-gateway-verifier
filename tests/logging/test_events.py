@@ -40,7 +40,7 @@ def test_every_allow_list_names_a_stream_the_event_routes() -> None:
         ("SYS_APP_STOPPED", "200602"),
         ("SYS_APP_CRASHED", "200602"),
         ("SYS_UNHANDLED_EXCEPTION", "200604"),
-        ("SYS_MISSING_CORRELATION_ID", "200606"),
+        ("SYS_MISSING_CORRELATION_ID", "200628"),
     ],
 )
 def test_carries_the_event_id_the_spec_assigns(name: str, event_id: str) -> None:

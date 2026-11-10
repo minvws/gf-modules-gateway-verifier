@@ -39,7 +39,7 @@ Every event carries these on every stream, whenever the request context holds a 
 | `SYS_APP_STOPPED` | 200602 | INFO | `shutdown_reason`, `last_exception_type` |
 | `SYS_APP_CRASHED` | 200602 | CRITICAL | `shutdown_reason`, `last_exception_type` |
 | `SYS_UNHANDLED_EXCEPTION` | 200604 | ERROR | `exception_type`, `endpoint`, `method` |
-| `SYS_MISSING_CORRELATION_ID` | 200606 | ERROR | `endpoint`, `method` |
+| `SYS_MISSING_CORRELATION_ID` | 200628 | ERROR | `endpoint`, `method` |
 | `ACCESS_REQUEST` | 100 | INFO | `endpoint`, `method`, `status_code`, `status_code_missing`, `duration_ms`, `body`, `body_truncated` |
 
 ## Stream `siem`
