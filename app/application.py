@@ -8,8 +8,10 @@ from typing import Any
 
 import gfmodules.logging as gflog
 import uvicorn
-from fastapi import FastAPI
-from gfmodules.logging.middleware import RequestContextMiddleware
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from gfmodules.logging.exceptions import log_unhandled_exception
+from gfmodules.logging.middleware import RequestContextMiddleware, restore_request_context
 
 from app import container
 from app.config import _ENVIRONMENT_CONFIG_PATH_NAME, _PATH, get_config
@@ -61,7 +63,7 @@ def create_fastapi_app() -> FastAPI:
     except Exception as exc:
         gflog.emit(
             logger,
-            gflog.active_catalogue().SYS_UNHANDLED_EXCEPTION,
+            Log.SYS_UNHANDLED_EXCEPTION,
             "Unhandled exception during application startup",
             fields={"exception_type": type(exc).__name__},
             exc_info=exc,
@@ -98,6 +100,12 @@ async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
         yield
 
 
+@restore_request_context
+def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    log_unhandled_exception(logger, request, exc)
+    return JSONResponse(status_code=500, content={"error": "Internal server error"})
+
+
 def setup_fastapi() -> FastAPI:
     config = get_config()
 
@@ -118,6 +126,8 @@ def setup_fastapi() -> FastAPI:
 
     for router in routers:
         fastapi.include_router(router)
+
+    fastapi.add_exception_handler(Exception, _unhandled_exception_handler)
 
     if config.stats.enabled:
         fastapi.add_middleware(StatsdMiddleware, module_name=config.stats.module_name or "default")
