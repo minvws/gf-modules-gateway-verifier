@@ -56,12 +56,12 @@ def ok_or_error(value: bool) -> str:
     tags=["Health"],
 )
 def health(jwt_service: Annotated[JWTService, Depends(get_jwt_service)]) -> JSONResponse:
-    logger.info("Checking database health")
+    logger.debug("Checking health")
 
     components = {
         "jwks_url": ok_or_error(jwt_service.health_check()),
     }
-    healthy = ok_or_error(all(components.values()))
+    healthy = ok_or_error(all(value == "ok" for value in components.values()))
     content = {"status": healthy, "components": components}
     if healthy == "ok":
         return JSONResponse(content=content)
