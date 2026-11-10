@@ -86,6 +86,12 @@ class Log(_Base):
             _SIEM: ("client_id", "certificate_organization_identifier"),
         },
     )
+    HEALTH_UNHEALTHY = LogEvent(
+        "200600",
+        logging.ERROR,
+        (_APP, _SIEM),
+        {_APP: ("component", "status", "error_detail"), _SIEM: ("component", "status")},
+    )
     SYS_APP_STARTED = _Base.SYS_APP_STARTED.with_id("200601")
     SYS_APP_STOPPED = _Base.SYS_APP_STOPPED.with_id("200602")
     SYS_APP_CRASHED = _Base.SYS_APP_CRASHED.with_id("200602")

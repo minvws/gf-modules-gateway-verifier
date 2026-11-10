@@ -1,10 +1,12 @@
 import logging
 from typing import Annotated
 
+import gfmodules.logging as gflog
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from app.container import get_jwt_service
+from app.logging.events import Log
 from app.services.jwt import JWTService
 
 logger = logging.getLogger(__name__)
@@ -66,7 +68,16 @@ def health(jwt_service: Annotated[JWTService, Depends(get_jwt_service)]) -> JSON
     if healthy == "ok":
         return JSONResponse(content=content)
     unhealthy = [name for name, status in components.items() if status != "ok"]
-    logger.warning(f"Unhealthy components: {', '.join(unhealthy)}")
+    gflog.emit(
+        logger,
+        Log.HEALTH_UNHEALTHY,
+        "Health check unhealthy",
+        fields={
+            "component": ",".join(unhealthy),
+            "status": "error",
+            "error_detail": f"unhealthy components: {', '.join(unhealthy)}",
+        },
+    )
     return JSONResponse(
         status_code=503,
         content=content,
