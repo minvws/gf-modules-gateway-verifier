@@ -9,7 +9,7 @@ from typing import Any
 
 import gfmodules.logging as gflog
 import pytest
-from gfmodules.logging import LoggingStreams, bind_context, update_context
+from gfmodules.logging import LoggingStreams, bind_context, collect_context
 from gfmodules.logging.formatter import JsonFormatter
 from gfmodules.logging.testing import capture_stream
 
@@ -100,7 +100,7 @@ def test_success_keeps_thumbprint_prefix_only_in_app(
     streams: Streams,
 ) -> None:
     logger, app_messages, siem_messages = streams
-    with update_context({"scope": "test-scope"}):
+    with bind_context({**collect_context(), "scope": "test-scope"}):
         gflog.emit(
             logger,
             Log.AUTHENTICATION_SUCCESS,
