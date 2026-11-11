@@ -103,7 +103,7 @@ def _validate_oin(
         gflog.emit(
             logger,
             Log.MISSING_ORGANIZATION_CLAIM,
-            "missing OIN claim in token",
+            "missing organization claim in token",
             fields=_client_fields(auth_headers, claims),
         )
         return PlainTextResponse("Missing OIN claim in token", status_code=400)
@@ -112,7 +112,7 @@ def _validate_oin(
         gflog.emit(
             logger,
             Log.ORGANIZATION_AUTHORIZATION_MISMATCH,
-            "certificate OIN does not match JWT OIN",
+            "certificate organization does not match JWT organization",
             fields={**_client_fields(auth_headers, claims), "resource_organization_identifier": str(act_sub)},
         )
         return PlainTextResponse("Certificate OIN does not match JWT OIN", status_code=400)
