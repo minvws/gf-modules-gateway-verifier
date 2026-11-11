@@ -1,12 +1,16 @@
 import pytest
 from gfmodules.logging import LogEvent, declared_events
-from gfmodules.logging.testing import assert_catalogue_complete
+from gfmodules.logging.testing import assert_catalogue_complete, assert_event_overview_current
 
 from app.logging.events import Log
 
 
 def test_defines_every_required_event() -> None:
     assert_catalogue_complete(Log)
+
+
+def test_the_event_overview_is_current() -> None:
+    assert_event_overview_current(Log, "docs/log-events.md")
 
 
 def test_every_declared_event_routes_at_least_one_stream() -> None:
