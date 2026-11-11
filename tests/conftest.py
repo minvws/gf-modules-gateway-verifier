@@ -1,7 +1,10 @@
 from collections.abc import Iterator
 from typing import Any
 
+import gfmodules.logging as gflog
 import pytest
+from gfmodules.logging import ConfigLogging
+from gfmodules.logging.testing import reset_for_tests
 
 from app.config import (
     Config,
@@ -14,6 +17,7 @@ from app.config import (
     reset_config,
     set_config,
 )
+from app.logging.events import Log
 
 
 @pytest.fixture
@@ -46,3 +50,17 @@ def default_config() -> Iterator[Config]:
     set_config(cfg)
     yield cfg
     reset_config()
+
+
+@pytest.fixture(autouse=True)
+def logging_catalogue() -> Iterator[None]:
+    gflog.configure(
+        config=ConfigLogging(console_streams=["debug"], access_logs=True),
+        loglevel="DEBUG",
+        catalogue=Log,
+        strict_fields=True,
+    )
+    try:
+        yield
+    finally:
+        reset_for_tests()
