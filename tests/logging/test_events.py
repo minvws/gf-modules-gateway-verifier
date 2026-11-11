@@ -28,8 +28,6 @@ def test_every_allow_list_names_a_stream_the_event_routes() -> None:
     "name,event_id",
     [
         ("JWT_VERIFICATION_FAILED", "200400"),
-        ("MTLS_BINDING_MISMATCH", "200401"),
-        ("TOKEN_BINDING_INVALID", "200406"),
         ("ORGANIZATION_AUTHORIZATION_MISMATCH", "200407"),
         ("MISSING_ORGANIZATION_CLAIM", "200408"),
         ("MALFORMED_AUTHORIZATION_HEADER", "200409"),

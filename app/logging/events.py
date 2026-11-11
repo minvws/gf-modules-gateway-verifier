@@ -1,4 +1,3 @@
-import hashlib
 import logging
 
 from gfmodules.logging import DefaultEventCatalogue, LogEvent, LoggingStreams
@@ -7,9 +6,6 @@ _APP = LoggingStreams.APP
 _SIEM = LoggingStreams.SIEM
 
 _Base = DefaultEventCatalogue
-
-# Length of the certificate thumbprint prefix logged on success (never the full value).
-_THUMBPRINT_PREFIX_LEN = 8
 
 
 class Log(_Base):
@@ -29,34 +25,6 @@ class Log(_Base):
         {
             _APP: ("error_reason", "token_present"),
             _SIEM: ("error_reason", "token_present"),
-        },
-    )
-    MTLS_BINDING_MISMATCH = LogEvent(
-        "200401",
-        logging.WARNING,
-        (_APP, _SIEM),
-        {
-            _APP: (
-                "certificate_organization_identifier",
-                "cert_thumbprint_jwt",
-                "cert_thumbprint_presented",
-                "client_id",
-            ),
-            _SIEM: (
-                "certificate_organization_identifier",
-                "cert_thumbprint_presented",
-                "cert_thumbprint_jwt",
-                "client_id",
-            ),
-        },
-    )
-    TOKEN_BINDING_INVALID = LogEvent(
-        "200406",
-        logging.WARNING,
-        (_APP, _SIEM),
-        {
-            _APP: ("certificate_organization_identifier", "failure_reason"),
-            _SIEM: ("certificate_organization_identifier",),
         },
     )
     ORGANIZATION_AUTHORIZATION_MISMATCH = LogEvent(
@@ -105,11 +73,7 @@ class Log(_Base):
         logging.INFO,
         (_APP, _SIEM),
         {
-            _APP: (
-                "certificate_organization_identifier",
-                "represented_organization_identifier",
-                "cert_thumbprint_prefix",
-            ),
+            _APP: ("certificate_organization_identifier", "represented_organization_identifier"),
             _SIEM: ("certificate_organization_identifier", "represented_organization_identifier"),
         },
     )
@@ -127,15 +91,3 @@ class Log(_Base):
     SYS_APP_CRASHED = _Base.SYS_APP_CRASHED.with_id("200602")
     SYS_UNHANDLED_EXCEPTION = _Base.SYS_UNHANDLED_EXCEPTION.with_id("200604")
     SYS_MISSING_CORRELATION_ID = _Base.SYS_MISSING_CORRELATION_ID.with_id("200606")
-
-    @staticmethod
-    def thumbprint_prefix(value: str | None) -> str | None:
-        if not value:
-            return None
-        return value[:_THUMBPRINT_PREFIX_LEN]
-
-    @staticmethod
-    def hash_thumbprint(value: str | None) -> str | None:
-        if not value:
-            return None
-        return hashlib.sha256(value.encode("ascii")).hexdigest()[:16]
