@@ -1,6 +1,6 @@
 import json
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -110,7 +110,7 @@ def jwt_service(trusted_signing_key: jwk.JWK, ps256_signing_key: jwk.JWK) -> JWT
         verify_ca=True,
     )
     service.jwks_store = trusted_jwks
-    service.jwks_ttl = datetime.max.replace(tzinfo=timezone.utc)
+    service.jwks_ttl = datetime.max.replace(tzinfo=UTC)
     return service
 
 
@@ -220,7 +220,7 @@ def test_refresh_jwks_fetches_and_parses_public_jwks(
 
 
 def test_get_jwks_returns_unexpired_cache_without_http(jwt_service: JWTService) -> None:
-    now = datetime(2026, 1, 1, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 1, 1, 12, tzinfo=UTC)
     cached_jwks = jwt_service.jwks_store
     cached_ttl = now + timedelta(seconds=1)
     jwt_service.jwks_ttl = cached_ttl
@@ -243,7 +243,7 @@ def test_get_jwks_refreshes_empty_or_expired_cache(
     trusted_signing_key: jwk.JWK,
     cache_state: str,
 ) -> None:
-    now = datetime(2026, 1, 1, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 1, 1, 12, tzinfo=UTC)
     jwks_json = public_jwks_json(trusted_signing_key)
     response = MagicMock(spec=Response)
     response.text = jwks_json
@@ -270,7 +270,7 @@ def test_get_jwks_refreshes_empty_or_expired_cache(
 def test_get_jwks_propagates_refresh_error_and_preserves_expired_cache(
     jwt_service: JWTService,
 ) -> None:
-    now = datetime(2026, 1, 1, 12, tzinfo=timezone.utc)
+    now = datetime(2026, 1, 1, 12, tzinfo=UTC)
     previous_store = jwt_service.jwks_store
     previous_ttl = now - timedelta(seconds=1)
     jwt_service.jwks_ttl = previous_ttl

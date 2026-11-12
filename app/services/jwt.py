@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from jwcrypto import jwk, jwt
 from jwcrypto.common import JWException
@@ -35,7 +35,7 @@ class JWTService:
         self.jwks_store = jwk.JWKSet.from_json(r.text)
 
     def _get_jwks(self) -> jwk.JWKSet:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         if self.jwks_store is None or self.jwks_ttl is None or self.jwks_ttl < now:
             logger.debug("Cache expired or not found. Refreshing JWKS")
